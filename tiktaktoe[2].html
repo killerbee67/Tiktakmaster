@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe</title>
+  <style>
+    body {
+      background-color: black;
+      font-family: Arial, sans-serif;
+    }
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 10px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      cursor: pointer;
+    }
+    .cell:hover {
+      background-color: #444;
+    }
+    #score-board {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: white;
+    }
+    #mode-switch {
+      margin-top: 20px;
+    }
+    .x {
+      color: red;
+    }
+    .o {
+      color: blue;
+    }
+  #mode-switch {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+}
+
+#mode-switch:hover {
+  background-color: #3e8e41;
+}
+
+#reset-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #f44336;
+  color: #fff;
+  cursor: pointer;
+}
+
+#reset-button:hover {
+  background-color: #e91e63;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  background-color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36px;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.cell:hover {
+  background-color: #444;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+#score-board {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #fff;
+  font-weight: bold;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #222;
+}
+
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="score-board">X: 0 | O: 0</div>
+    <div id="game-board">
+      <div class="cell" id="cell-0"></div>
+      <div class="cell" id="cell-1"></div>
+      <div class="cell" id="cell-2"></div>
+      <div class="cell" id="cell-3"></div>
+      <div class="cell" id="cell-4"></div>
+      <div class="cell" id="cell-5"></div>
+      <div class="cell" id="cell-6"></div>
+      <div class="cell" id="cell-7"></div>
+      <div class="cell" id="cell-8"></div>
+    </div>
+    <button id="mode-switch">Switch to Multiplayer</button>
+
+    <button id="reset-button">Reset Game</button>
+  </div>
+
+  <script>
+    let currentPlayer = 'X';
+    let gameMode = 'single';
+    let score = { X: 0, O: 0 };
+    let board = ['', '', '', '', '', '', '', '', ''];
+
+    // Function to handle cell click
+    function handleCellClick(index) {
+      if (board[index] === '') {
+        board[index] = currentPlayer;
+        document.getElementById(`cell-${index}`).innerText = currentPlayer;
+        document.getElementById(`cell-${index}`).classList.add(currentPlayer === 'X' ? 'x' : 'o');
+        checkWinner();
+        if (gameMode === 'single') {
+          makeAIMove();
+        } else {
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+      }
+    }
+
+    // Function to check winner
+    function checkWinner() {
+      const winningCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+      for (let combination of winningCombinations) {
+        if (board[combination[0]] === board[combination[1]] && board[combination[1]] === board[combination[2]] && board[combination[0]] !== '') {
+          score[board[combination[0]]] += 1;
+document.getElementById('score-board').innerText = `X: ${score.X} | O: ${score.O}`;
+          alert(`Player ${board[combination[0]]} wins!`);
+          resetGame();
+          return;
+        }
+      }
+      if (!board.includes('')) {
+        alert('It\'s a draw!');
+        resetGame();
+      }
+    }
+
+                               
+    function makeAIMove() {
+      const bestMove = minimax(board, 0, -Infinity, Infinity, false);
+      board[bestMove.index] = 'O';
+      document.getElementById(`cell-${bestMove.index}`).innerText = 'O';
+      document.getElementById(`cell-${bestMove.index}`).classList.add('o');
+      checkWinner();
+      currentPlayer = 'X';
+    }
+
+    // Minimax function
+    function minimax(board, depth, alpha, beta, isMaximizing) {
+      const winner = checkWinnerMinimax(board);
+      if (winner === 'X') {
+        return { score: -10 + depth };
+      } else if (winner === 'O') {
+        return { score: 10 - depth };
+      } else if (!board.includes('')) {
+        return { score: 0 };
+      }
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        let bestIndex = null;
+        for (let i = 0; i < 9; i++) {
+          if (board[i] === '') {
+            board[i] = 'O';
+            const score = minimax(board, depth + 1, alpha, beta, false).score;
+            board[i] = '';
+            if (score > bestScore) {
+              bestScore = score;
+              bestIndex = i;
+            }
+            alpha = Math.max(alpha, score);
+            if (beta <= alpha) {
+              break;
+            }
+          }
+        }
+        return { score: bestScore, index: bestIndex };
+      } else {
+        let bestScore = Infinity;
+        let bestIndex = null;
+        for (let i = 0; i < 9; i++) {
+          if (board[i] === '') {
+            board[i] = 'X';
+            const score = minimax(board, depth + 1, alpha, beta, true).score;
+            board[i] = '';
+            if (score < bestScore) {
+              bestScore = score;
+              bestIndex = i;
+            }
+            beta = Math.min(beta, score);
+            if (beta <= alpha) {
+              break;
+            }
+          }
+        }
+        return { score: bestScore, index: bestIndex };
+      }
+    }
+
+    // Function to check winner for minimax
+    function checkWinnerMinimax(board) {
+      const winningCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+      for (let combination of winningCombinations) {
+        if (board[combination[0]] === board[combination[1]] && board[combination[1]] === board[combination[2]] && board[combination[0]] !== '') {
+          return board[combination[0]];
+        }
+      }
+      return null;
+    }
+
+    // Function to reset game
+    function resetGame() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      for (let i = 0; i < 9; i++) {
+        document.getElementById(`cell-${i}`).innerText = '';
+        document.getElementById(`cell-${i}`).classList.remove('x', 'o');
+      }
+    }
+  document.getElementById('mode-switch').addEventListener('click', () => {
+  if (gameMode === 'single-smart') {
+    gameMode = 'single-normal';
+    document.getElementById('mode-switch').innerText = 'Switch to Smart AI';
+  } else if (gameMode === 'single-normal') {
+    gameMode = 'multi';
+    document.getElementById('mode-switch').innerText = 'Switch to Single Player';
+  } else if (gameMode === 'multi') {
+    gameMode = 'single-smart';
+    document.getElementById('mode-switch').innerText = 'Switch to Normal AI';
+  }
+  score = { X: 0, O: 0 }; // Reset the score
+  document.getElementById('score-board').innerText = `X: ${score.X} | O: ${score.O}`; // Update the score board
+  resetGame();
+});
+    // Event listeners for cells
+    for (let i = 0; i < 9; i++) {
+      document.getElementById(`cell-${i}`).addEventListener('click', () => handleCellClick(i));
+    }
+
+    // Event listener for mode switch
+    document.getElementById('mode-switch').addEventListener('click', () => {
+      gameMode = gameMode === 'single' ? 'multi' : 'single';
+      document.getElementById('mode-switch').innerText = gameMode === 'single' ? 'Switch to Multiplayer' : 'Switch to Single Player';
+      resetGame();
+    });
+
+    // Event listener for reset button
+    document.getElementById('reset-button').addEventListener('click', resetGame);
+  </script>
+</body>
+</html>
